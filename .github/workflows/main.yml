@@ -21,7 +21,7 @@ jobs:
       run: chmod +x ./gradlew
       
     - name: Run Gradle Tasks
-      run: ./gradlew jsBrowserDistribution --no-configuration-cache
+      run: ./gradlew wasmjsBrowserDistribution --no-configuration-cache
 
     - name: Fix permissions
       run: |
@@ -32,7 +32,7 @@ jobs:
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: composeApp/build/dist/js/productionExecutable/
+        path: composeApp/build/dist/wasmjs/productionExecutable/
 
   deploy:
     # Add a dependency to the build job

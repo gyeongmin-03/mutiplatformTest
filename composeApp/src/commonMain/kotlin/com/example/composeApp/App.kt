@@ -1,69 +1,219 @@
 package com.example.composeApp
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.Typography
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import demo1.composeapp.generated.resources.IBMPlexSansKR_Regular
 import demo1.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.random.Random
+
+
+var BOARD_SIZE = 10
+var MINE_COUNT = 15
 
 @Composable
 @Preview
 fun App() {
-    var rows by remember { mutableStateOf(10) }
-    var cols by remember { mutableStateOf(10) }
-    var minesCount by remember { mutableStateOf(20) }
-    var game = MineSweeper(rows, cols)
     val font = Font(Res.font.IBMPlexSansKR_Regular)
-
-
     // 지뢰판 UI 생성
     MaterialTheme(
         typography = Typography(FontFamily(font))
     ) {
-        Column {
-            Text("MineSweeper")
-            Button(onClick = { game.generateMines(minesCount) }) {
-                Text("게임 시작")
-            }
+        MinesweeperGame()
+    }
+}
 
-            // 각 셀의 버튼을 만들고 상태 관리
-            for (row in 0 until rows) {
-                Row {
-                    for (col in 0 until cols) {
-                        val cell = game.uncoverCell(row, col)
-                        Button(onClick = {
-                            // 셀 클릭 시 처리
-                        }) {
-                            Text("셀[$row, $col]")
-                        }
+
+
+@Composable
+fun MinesweeperGame() {
+    var board by remember { mutableStateOf(generateBoard()) }
+    var revealed by remember { mutableStateOf(List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }) }
+    var flagged by remember { mutableStateOf(List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }) }
+    var gameOver by remember { mutableStateOf(false) }
+    var flagMode by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
+    var tempBoardSize by remember { mutableStateOf(BOARD_SIZE) }
+    var tempMineCount by remember { mutableStateOf(MINE_COUNT) }
+
+    fun resetGame() {
+        board = generateBoard()
+        revealed = List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }
+        flagged = List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }
+        gameOver = false
+        flagMode = false
+    }
+
+    fun reveal(x: Int, y: Int) {
+        if (gameOver || revealed[x][y] || flagged[x][y]) return
+        revealed = revealed.mapIndexed { i, row ->
+            row.mapIndexed { j, cell ->
+                if (i == x && j == y) true else cell
+            }.toMutableList()
+        }
+
+        if (board[x][y] == -1) {
+            gameOver = true
+        } else if (board[x][y] == 0) {
+            for (dx in -1..1) {
+                for (dy in -1..1) {
+                    val nx = x + dx
+                    val ny = y + dy
+                    if (nx in 0 until BOARD_SIZE && ny in 0 until BOARD_SIZE && !revealed[nx][ny]) {
+                        reveal(nx, ny)
                     }
                 }
             }
         }
     }
-}
 
-
-
-// GameLogic.kt
-class MineSweeper(val rows: Int, val cols: Int) {
-    private val board = Array(rows) { Array(cols) { Cell() } }
-
-    fun generateMines(minesCount: Int) {
-        // 랜덤으로 지뢰 배치
+    fun toggleFlag(x: Int, y: Int) {
+        if (revealed[x][y]) return
+        flagged = flagged.mapIndexed { i, row ->
+            row.mapIndexed { j, cell ->
+                if (i == x && j == y) !cell else cell
+            }.toMutableList()
+        }
     }
 
-    fun uncoverCell(row: Int, col: Int): Cell {
-        // 셀을 여는 로직
-        return board[row][col]
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Minesweeper", style = MaterialTheme.typography.h2)
+        Spacer(Modifier.height(16.dp))
+
+        Row {
+            Button(onClick = { flagMode = !flagMode }) {
+                Text(if (flagMode) "Flag Mode" else "Reveal Mode")
+            }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = { resetGame() }) {
+                Text("Restart")
+            }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = { showSettings = true }) {
+                Text("Game Settings")
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+
+        Column {
+            for (x in 0 until BOARD_SIZE) {
+                Row {
+                    for (y in 0 until BOARD_SIZE) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    when {
+                                        gameOver && board[x][y] == -1 -> Color.Red
+                                        flagged[x][y] -> Color.Yellow
+                                        revealed[x][y] -> Color.LightGray
+                                        else -> Color.DarkGray
+                                    },
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .clickable {
+                                    if (flagMode) toggleFlag(x, y) else reveal(x, y)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (flagged[x][y]) {
+                                Text("🚩", color = Color.Black)
+                            } else if (revealed[x][y]) {
+                                Text(
+                                    text = when (board[x][y]) {
+                                        -1 -> "💣"
+                                        0 -> ""
+                                        else -> board[x][y].toString()
+                                    },
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (gameOver) {
+            Spacer(Modifier.height(16.dp))
+            Text("Game Over! Press Restart to play again.", color = Color.Red)
+        }
     }
 
-    data class Cell(var isMine: Boolean = false, var isRevealed: Boolean = false, var adjacentMines: Int = 0)
+    if (showSettings) {
+        AlertDialog(
+            onDismissRequest = { showSettings = false },
+            confirmButton = {
+                Button(onClick = {
+                    BOARD_SIZE = tempBoardSize
+                    MINE_COUNT = tempMineCount
+                    resetGame()
+                    showSettings = false
+                }) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showSettings = false }) {
+                    Text("Cancel")
+                }
+            },
+            title = { Text("Game Settings") },
+            text = {
+                Column {
+                    Text("Board Size (N*N)")
+                    Slider(
+                        value = tempBoardSize.toFloat(),
+                        onValueChange = { tempBoardSize = it.toInt() },
+                        valueRange = 5f..20f,
+                        steps = 15
+                    )
+                    Text("Mines Count")
+                    Slider(
+                        value = tempMineCount.toFloat(),
+                        onValueChange = { tempMineCount = it.toInt().coerceAtMost(tempBoardSize * tempBoardSize - 1) },
+                        valueRange = 1f..(tempBoardSize * tempBoardSize - 1).toFloat()
+                    )
+                }
+            }
+        )
+    }
 }
+
+fun generateBoard(): Array<IntArray> {
+    val board = Array(BOARD_SIZE) { IntArray(BOARD_SIZE) }
+    val mines = mutableSetOf<Pair<Int, Int>>()
+    while (mines.size < MINE_COUNT) {
+        val x = Random.nextInt(BOARD_SIZE)
+        val y = Random.nextInt(BOARD_SIZE)
+        mines.add(Pair(x, y))
+    }
+
+    for ((x, y) in mines) {
+        board[x][y] = -1
+        for (dx in -1..1) {
+            for (dy in -1..1) {
+                val nx = x + dx
+                val ny = y + dy
+                if (nx in 0 until BOARD_SIZE && ny in 0 until BOARD_SIZE && board[nx][ny] != -1) {
+                    board[nx][ny]++
+                }
+            }
+        }
+    }
+    return board
+}
+

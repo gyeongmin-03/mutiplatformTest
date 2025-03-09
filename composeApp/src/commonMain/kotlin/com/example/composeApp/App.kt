@@ -34,7 +34,6 @@ fun App() {
 }
 
 
-
 @Composable
 fun MinesweeperGame() {
     var board by remember { mutableStateOf(generateBoard()) }
@@ -91,6 +90,8 @@ fun MinesweeperGame() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Minesweeper", style = MaterialTheme.typography.h2)
+        Spacer(Modifier.height(8.dp))
+        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
         Row {
@@ -158,8 +159,8 @@ fun MinesweeperGame() {
             onDismissRequest = { showSettings = false },
             confirmButton = {
                 Button(onClick = {
+                    MINE_COUNT = tempMineCount.coerceAtMost(tempBoardSize * tempBoardSize - 1)
                     BOARD_SIZE = tempBoardSize
-                    MINE_COUNT = tempMineCount
                     resetGame()
                     showSettings = false
                 }) {
@@ -174,14 +175,14 @@ fun MinesweeperGame() {
             title = { Text("Game Settings") },
             text = {
                 Column {
-                    Text("Board Size (N*N)")
+                    Text("Board Size (N*N): $tempBoardSize")
                     Slider(
                         value = tempBoardSize.toFloat(),
                         onValueChange = { tempBoardSize = it.toInt() },
                         valueRange = 5f..20f,
                         steps = 15
                     )
-                    Text("Mines Count")
+                    Text("Mines Count: ${tempMineCount.coerceAtMost(tempBoardSize * tempBoardSize - 1)}")
                     Slider(
                         value = tempMineCount.toFloat(),
                         onValueChange = { tempMineCount = it.toInt().coerceAtMost(tempBoardSize * tempBoardSize - 1) },
@@ -192,6 +193,8 @@ fun MinesweeperGame() {
         )
     }
 }
+
+
 
 fun generateBoard(): Array<IntArray> {
     val board = Array(BOARD_SIZE) { IntArray(BOARD_SIZE) }
@@ -216,4 +219,3 @@ fun generateBoard(): Array<IntArray> {
     }
     return board
 }
-

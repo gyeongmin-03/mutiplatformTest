@@ -1,5 +1,12 @@
 name: Deploy WasmJS App to GitHub Pages #  워크플로의 이름을 설정
+
 on: [push, pull_request] # push 및 pull_request 이벤트가 발생할 때 트리거됩니다.
+
+permissions:
+  contents: read  # Required to fetch the repository content
+  pages: write    # Allow deployment to GitHub Pages
+  id-token: write # Required by actions/configure-pages
+  
 jobs:
   # Build job
   build:

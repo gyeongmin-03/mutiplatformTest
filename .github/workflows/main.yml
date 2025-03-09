@@ -25,7 +25,7 @@ jobs:
 
     - name: Fix permissions
       run: |
-        chmod -v -R +rX "composeApp/build/dist/js/productionExecutable/" | while read line; do
+        chmod -v -R +rX "composeApp/build/dist/wasmjs/productionExecutable/" | while read line; do
           echo "::warning title=Invalid file permissions automatically fixed::$line"
         done
 

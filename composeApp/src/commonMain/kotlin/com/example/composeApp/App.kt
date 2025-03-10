@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import demo1.composeapp.generated.resources.IBMPlexSansKR_Regular
@@ -44,6 +45,8 @@ fun MinesweeperGame() {
     var showSettings by remember { mutableStateOf(false) }
     var tempBoardSize by remember { mutableStateOf(BOARD_SIZE) }
     var tempMineCount by remember { mutableStateOf(MINE_COUNT) }
+    var boardSizePx by remember { mutableStateOf(0) }
+    var boardSizePy by remember { mutableStateOf(0) }
 
     fun resetGame() {
         board = generateBoard()
@@ -86,7 +89,11 @@ fun MinesweeperGame() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+            .onSizeChanged {
+                boardSizePx = it.width
+                boardSizePy = it.height - 400 // 헤더 및 버튼 영역 고려
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Minesweeper", style = MaterialTheme.typography.h2)
@@ -109,13 +116,18 @@ fun MinesweeperGame() {
         }
         Spacer(Modifier.height(16.dp))
 
-        Column {
+        val cellSize = minOf((boardSizePx / BOARD_SIZE).dp, (boardSizePy / BOARD_SIZE).dp)
+
+        Column(
+            modifier = Modifier.size(cellSize * BOARD_SIZE)
+        ){
             for (x in 0 until BOARD_SIZE) {
                 Row {
                     for (y in 0 until BOARD_SIZE) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(cellSize)
+                                .weight(1f)
                                 .background(
                                     when {
                                         gameOver && board[x][y] == -1 -> Color.Red
@@ -147,12 +159,12 @@ fun MinesweeperGame() {
                 }
             }
         }
-
         if (gameOver) {
             Spacer(Modifier.height(16.dp))
             Text("Game Over! Press Restart to play again.", color = Color.Red)
         }
     }
+
 
     if (showSettings) {
         AlertDialog(

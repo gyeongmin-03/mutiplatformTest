@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -16,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -84,13 +82,8 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp)
-            .graphicsLayer(scaleX = scale, scaleY = scale)
-            .pointerInput(Unit) {
-                detectTransformGestures { _, _, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(0.5f, 3f)
-                }
-            }
-            .transformable(state = state)
+//            .graphicsLayer(scaleX = scale, scaleY = scale)
+//            .transformable(state = state)
             ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -111,10 +104,15 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
         Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
-        val cellSize = minOf((screenWidth / BOARD_SIZE), (screenHeight / BOARD_SIZE))
+        val cellSize = minOf((screenWidth / BOARD_SIZE), (screenHeight / BOARD_SIZE)) * scale
 
         Column(
             modifier = Modifier.size(cellSize * BOARD_SIZE)
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, _, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(0.5f, 3f)
+                    }
+                }
         ){
             for (x in 0 until BOARD_SIZE) {
                 Row {

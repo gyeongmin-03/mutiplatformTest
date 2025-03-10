@@ -110,12 +110,12 @@ fun gamePC() {
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Minesweeper", style = MaterialTheme.typography.h2, modifier = Modifier.weight(1f))
+        Text("Minesweeper", style = MaterialTheme.typography.h2)
         Spacer(Modifier.height(8.dp))
-        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT", modifier = Modifier.weight(1f))
+        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
-        Row(modifier = Modifier.weight(1f)) {
+        Row{
             Button(onClick = { flagMode = !flagMode }) {
                 Text(if (flagMode) "Flag Mode" else "Reveal Mode")
             }
@@ -132,8 +132,9 @@ fun gamePC() {
 
         val cellSize = minOf((boardSizePx / BOARD_SIZE).dp, (boardSizePy / BOARD_SIZE).dp)
 
+
         Column(
-            modifier = Modifier.size(cellSize * BOARD_SIZE).weight(10f)
+            modifier = Modifier.size(cellSize * BOARD_SIZE)
         ){
             for (x in 0 until BOARD_SIZE) {
                 Row {

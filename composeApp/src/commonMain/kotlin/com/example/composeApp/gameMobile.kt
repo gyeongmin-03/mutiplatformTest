@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Slider
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun gameMobile(screenWidth : Dp, screenHeight : Dp){
@@ -68,18 +70,13 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().height(screenHeight).padding(16.dp)
+        modifier = Modifier.fillMaxSize().padding(16.dp)
             .onSizeChanged {
-                boardSizePx = it.width
-                boardSizePy = it.height - 400 // 헤더 및 버튼 영역 고려
+//                boardSizePx = it.width
+//                boardSizePy = it.height - 400 // 헤더 및 버튼 영역 고려
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Minesweeper", style = MaterialTheme.typography.h2, fontSize = 21.sp)
-        Spacer(Modifier.height(8.dp))
-        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
-        Spacer(Modifier.height(16.dp))
-
         Row {
             Button(onClick = { flagMode = !flagMode }) {
                 Text(if (flagMode) "Flag Mode" else "Reveal Mode")
@@ -93,9 +90,11 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
                 Text("Settings")
             }
         }
+        Spacer(Modifier.height(5.dp))
+        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
-        val cellSize = minOf((boardSizePx / BOARD_SIZE).dp, (boardSizePy / BOARD_SIZE).dp)
+        val cellSize = minOf((screenWidth / BOARD_SIZE), (screenHeight / BOARD_SIZE))
 
         Column(
             modifier = Modifier.size(cellSize * BOARD_SIZE)

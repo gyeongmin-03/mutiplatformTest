@@ -7,50 +7,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import demo1.composeapp.generated.resources.IBMPlexSansKR_Regular
-import demo1.composeapp.generated.resources.Res
-import org.jetbrains.compose.resources.Font
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.random.Random
-
-
-var BOARD_SIZE = 10
-var MINE_COUNT = 15
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-@Preview
-fun App() {
-    val font = Font(Res.font.IBMPlexSansKR_Regular)
-    MaterialTheme(
-        typography = Typography(FontFamily(font))
-    ) {
-        val screenWidth = with(LocalDensity.current) {
-            LocalWindowInfo.current.containerSize.width.toDp()
-        }
-        val screenHeight = with(LocalDensity.current) {
-            LocalWindowInfo.current.containerSize.height.toDp()
-        }
-        if(screenWidth >= 600.dp){
-            gamePC()
-        }
-        else {
-            gameMobile(screenWidth, screenHeight)
-        }
-    }
-}
-
+import androidx.compose.ui.unit.sp
 
 @Composable
-fun gamePC() {
+fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     var board by remember { mutableStateOf(generateBoard()) }
     var revealed by remember { mutableStateOf(List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }) }
     var flagged by remember { mutableStateOf(List(BOARD_SIZE) { MutableList(BOARD_SIZE) { false } }) }
@@ -103,19 +68,19 @@ fun gamePC() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier.fillMaxWidth().height(screenHeight).padding(16.dp)
             .onSizeChanged {
                 boardSizePx = it.width
                 boardSizePy = it.height - 400 // 헤더 및 버튼 영역 고려
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Minesweeper", style = MaterialTheme.typography.h2, modifier = Modifier.weight(1f))
+        Text("Minesweeper", style = MaterialTheme.typography.h2, fontSize = 21.sp)
         Spacer(Modifier.height(8.dp))
-        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT", modifier = Modifier.weight(1f))
+        Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
-        Row(modifier = Modifier.weight(1f)) {
+        Row {
             Button(onClick = { flagMode = !flagMode }) {
                 Text(if (flagMode) "Flag Mode" else "Reveal Mode")
             }
@@ -125,7 +90,7 @@ fun gamePC() {
             }
             Spacer(Modifier.width(8.dp))
             Button(onClick = { showSettings = true }) {
-                Text("Game Settings")
+                Text("Settings")
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -133,7 +98,7 @@ fun gamePC() {
         val cellSize = minOf((boardSizePx / BOARD_SIZE).dp, (boardSizePy / BOARD_SIZE).dp)
 
         Column(
-            modifier = Modifier.size(cellSize * BOARD_SIZE).weight(10f)
+            modifier = Modifier.size(cellSize * BOARD_SIZE)
         ){
             for (x in 0 until BOARD_SIZE) {
                 Row {
@@ -218,30 +183,4 @@ fun gamePC() {
             }
         )
     }
-}
-
-
-
-fun generateBoard(): Array<IntArray> {
-    val board = Array(BOARD_SIZE) { IntArray(BOARD_SIZE) }
-    val mines = mutableSetOf<Pair<Int, Int>>()
-    while (mines.size < MINE_COUNT) {
-        val x = Random.nextInt(BOARD_SIZE)
-        val y = Random.nextInt(BOARD_SIZE)
-        mines.add(Pair(x, y))
-    }
-
-    for ((x, y) in mines) {
-        board[x][y] = -1
-        for (dx in -1..1) {
-            for (dy in -1..1) {
-                val nx = x + dx
-                val ny = y + dy
-                if (nx in 0 until BOARD_SIZE && ny in 0 until BOARD_SIZE && board[nx][ny] != -1) {
-                    board[nx][ny]++
-                }
-            }
-        }
-    }
-    return board
 }

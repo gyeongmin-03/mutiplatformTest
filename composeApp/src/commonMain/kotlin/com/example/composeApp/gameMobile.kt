@@ -2,6 +2,7 @@ package com.example.composeApp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -11,8 +12,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -26,8 +28,16 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     var showSettings by remember { mutableStateOf(false) }
     var tempBoardSize by remember { mutableStateOf(BOARD_SIZE) }
     var tempMineCount by remember { mutableStateOf(MINE_COUNT) }
-    var boardSizePx by remember { mutableStateOf(0) }
-    var boardSizePy by remember { mutableStateOf(0) }
+
+    // set up all transformation states
+    var scale by remember { mutableStateOf(1f) }
+    var rotation by remember { mutableStateOf(0f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+        scale *= zoomChange
+        rotation += rotationChange
+        offset += offsetChange
+    }
 
     fun resetGame() {
         board = generateBoard()
@@ -70,11 +80,8 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-            .onSizeChanged {
-//                boardSizePx = it.width
-//                boardSizePy = it.height - 400 // 헤더 및 버튼 영역 고려
-            },
+        modifier = Modifier.fillMaxSize().padding(16.dp).graphicsLayer(scaleX = scale, scaleY = scale)
+            ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row {

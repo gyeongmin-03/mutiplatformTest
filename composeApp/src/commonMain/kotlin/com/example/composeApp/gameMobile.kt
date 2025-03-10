@@ -2,7 +2,9 @@ package com.example.composeApp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -15,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -80,7 +83,14 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).graphicsLayer(scaleX = scale, scaleY = scale)
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .pointerInput(Unit) {
+                detectTransformGestures { _, _, zoom, _ ->
+                    scale = (scale * zoom).coerceIn(0.5f, 3f)
+                }
+            }
+            .transformable(state = state)
             ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

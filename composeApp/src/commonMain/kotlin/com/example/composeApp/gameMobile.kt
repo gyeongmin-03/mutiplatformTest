@@ -2,7 +2,6 @@ package com.example.composeApp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -12,10 +11,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -29,11 +25,6 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
     var showSettings by remember { mutableStateOf(false) }
     var tempBoardSize by remember { mutableStateOf(BOARD_SIZE) }
     var tempMineCount by remember { mutableStateOf(MINE_COUNT) }
-
-    // set up all transformation states
-    var scale by remember { mutableStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
-
 
     fun resetGame() {
         board = generateBoard()
@@ -98,68 +89,53 @@ fun gameMobile(screenWidth : Dp, screenHeight : Dp){
         Text("Board Size: ${BOARD_SIZE} x ${BOARD_SIZE}, Mines: $MINE_COUNT")
         Spacer(Modifier.height(16.dp))
 
-        val cellSize = minOf((screenWidth / BOARD_SIZE), (screenHeight / BOARD_SIZE)) * scale
+        val cellSize = minOf((screenWidth / BOARD_SIZE), (screenHeight / BOARD_SIZE))
 
-        Box(
-            Modifier.fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        scale *= zoom
-                        offset += pan
-                    }
-                }
-                .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    translationX = offset.x,
-                    translationY = offset.y
-                )
+        Column(
+            modifier = Modifier.size(cellSize * BOARD_SIZE)
         ) {
-            Column(
-                modifier = Modifier.size(cellSize * BOARD_SIZE)
-            ) {
-                for (x in 0 until BOARD_SIZE) {
-                    Row {
-                        for (y in 0 until BOARD_SIZE) {
-                            Box(
-                                modifier = Modifier
-                                    .size(cellSize)
-                                    .weight(1f, false)
-                                    .background(
-                                        when {
-                                            gameOver && board[x][y] == -1 -> Color.Red
-                                            flagged[x][y] -> Color.Yellow
-                                            revealed[x][y] -> Color.LightGray
-                                            else -> Color.DarkGray
-                                        },
-                                        shape = RoundedCornerShape(4.dp)
-                                    )
-                                    .clickable {
-                                        if (flagMode) toggleFlag(x, y) else reveal(x, y)
+            for (x in 0 until BOARD_SIZE) {
+                Row {
+                    for (y in 0 until BOARD_SIZE) {
+                        Box(
+                            modifier = Modifier
+                                .size(cellSize)
+                                .weight(1f, false)
+                                .background(
+                                    when {
+                                        gameOver && board[x][y] == -1 -> Color.Red
+                                        flagged[x][y] -> Color.Yellow
+                                        revealed[x][y] -> Color.LightGray
+                                        else -> Color.DarkGray
                                     },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (flagged[x][y]) {
-                                    Text("🚩", color = Color.Black)
-                                } else if (revealed[x][y]) {
-                                    Text(
-                                        text = when (board[x][y]) {
-                                            -1 -> "💣"
-                                            0 -> ""
-                                            else -> board[x][y].toString()
-                                        },
-                                        color = Color.Black
-                                    )
-                                }
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .clickable {
+                                    if (flagMode) toggleFlag(x, y) else reveal(x, y)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (flagged[x][y]) {
+                                Text("🚩", color = Color.Black)
+                            } else if (revealed[x][y]) {
+                                Text(
+                                    text = when (board[x][y]) {
+                                        -1 -> "💣"
+                                        0 -> ""
+                                        else -> board[x][y].toString()
+                                    },
+                                    color = Color.Black
+                                )
                             }
                         }
                     }
                 }
             }
-            if (gameOver) {
-                Spacer(Modifier.height(16.dp))
-                Text("Game Over! Press Restart to play again.", color = Color.Red)
-            }
+        }
+
+        if (gameOver) {
+            Spacer(Modifier.height(16.dp))
+            Text("Game Over! Press Restart to play again.", color = Color.Red)
         }
     }
 
